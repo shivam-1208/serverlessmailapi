@@ -1,8 +1,22 @@
 import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
+  if (req.method === 'GET') {
+    return res.status(200).send(`
+      <h1>📧 Email Sender API</h1>
+      <p>Send a <strong>POST</strong> request to <code>/api/send-email</code> with JSON body:</p>
+      <pre>
+{
+  "receiver_email": "example@gmail.com",
+  "subject": "Test",
+  "body_text": "Hello from the API"
+}
+      </pre>
+    `);
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST method is allowed' });
+    return res.status(405).json({ error: 'Only POST and GET methods are allowed' });
   }
 
   const { receiver_email, subject, body_text } = req.body;
