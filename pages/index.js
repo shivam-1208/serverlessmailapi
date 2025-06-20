@@ -3,7 +3,7 @@ export default function Home() {
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '2rem', maxWidth: '700px', margin: '0 auto' }}>
       <h1>📨 Welcome to Email API</h1>
       
-      <p>✅ Go to <a href="/sendmail" style={{ color: '#0070f3', textDecoration: 'underline' }}>/sendmail</a> to use the online form.</p>
+      <p>✅ Go to <a href="/api/send-email" style={{ color: '#0070f3', textDecoration: 'underline' }}>/sendmail</a> to use the online form.</p>
       
       <p>✅ Or send a <strong>POST</strong> request to <code>/api/send-email</code> using Postman or cURL:</p>
 
