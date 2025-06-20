@@ -1,47 +1,51 @@
-// pages/sendmail.js
+import nodemailer from 'nodemailer';
 
-import { useState } from 'react';
+export default async function handler(req, res) {
+  if (req.method === 'GET') {
+    return res.status(200).send(`
+      <h1>📧 Email Sender API</h1>
+      <p>Send a <strong>POST</strong> request to <code>/api/send-email</code> with JSON body:</p>
+      <pre>
+{
+  "receiver_email": "example@gmail.com",
+  "subject": "Test",
+  "body_text": "Hello from the API"
+}
+      </pre>
+    `);
+  }
 
-export default function SendMailForm() {
-  const [formData, setFormData] = useState({
-    receiver_email: '',
-    subject: '',
-    body_text: '',
-  });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Only POST and GET methods are allowed' });
+  }
 
-  const [status, setStatus] = useState('');
+  const { receiver_email, subject, body_text } = req.body;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  if (!receiver_email || !subject || !body_text) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
 
-    const res = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
     });
 
-    const data = await res.json();
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: receiver_email,
+      subject,
+      text: body_text,
+    });
 
-    if (res.ok) {
-      setStatus('✅ Email sent successfully!');
-    } else {
-      setStatus(`❌ Error: ${data.error}`);
-    }
-  };
-
-  return (
-    <div style={{ fontFamily: 'Arial', padding: '2rem' }}>
-      <h1>📧 Send Email</h1>
-      <form onSubmit={handleSubmit}>
-        <label>Email: <input type="email" required onChange={(e) => setFormData({ ...formData, receiver_email: e.target.value })} /></label><br /><br />
-        <label>Subject: <input required onChange={(e) => setFormData({ ...formData, subject: e.target.value })} /></label><br /><br />
-        <label>Body:<br />
-          <textarea required onChange={(e) => setFormData({ ...formData, body_text: e.target.value })}></textarea>
-        </label><br /><br />
-        <button type="submit">Send</button>
-      </form>
-      <p>{status}</p>
-    </div>
-  );
+    return res.status(200).json({ message: 'Email sent successfully' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 }
 
